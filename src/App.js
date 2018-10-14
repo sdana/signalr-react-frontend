@@ -2,18 +2,20 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { HubConnectionBuilder, LogLevel } from "@aspnet/signalr"
+import MessageHandler from "./MessageHandler"
 
 class App extends Component {
-  
+
   state = {
-    message: "",
-    clicks: 0
+    message: ["none yet"],
+    clicks: 0,
+    switcher: true
   }
 
 componentDidMount = () => {
   // const hubConnection = new HubConnection("https://localhost:5001/Hubs/ChatHub")
   const hubConnection = new HubConnectionBuilder()
-    .withUrl("http://192.168.1.104:80/Hubs/ChatHub")
+    .withUrl("http://10.1.10.145:5001/Hubs/ChatHub")
     .configureLogging(LogLevel.Information)
     .build();
   this.setState({ hubConnection }, () => {
@@ -28,6 +30,13 @@ componentDidMount = () => {
         console.log("You clicked on the button")
     })
 
+    this.state.hubConnection.on("downloadMessage", n =>
+    {
+      console.log("Working")
+      console.log(n)
+      this.state.message.push(n)
+    })
+
   });
 
 
@@ -37,7 +46,6 @@ componentDidMount = () => {
 connectionEstablished = () => {
   if (this.state.hubConnection)
   {
-    
     this.state.hubConnection.on("works", b => {
       console.log("This shit works yo!")
     })
@@ -51,7 +59,6 @@ connectionEstablished = () => {
 testConnection = () => {
   if (this.state.hubConnection){
     this.state.hubConnection.invoke("NewClick").catch(err => console.error(err.toString()));
-    
     // this.state.hubConnection.on("youClicked", b => {
     //   console.log("you clicked the button")
     // })
@@ -59,17 +66,41 @@ testConnection = () => {
 
 }
 
+sendMessage = () => {
+  if (this.state.hubConnection){
+    console.log("Sending message")
+    this.state.hubConnection.invoke("newMessage", this.state.messageField).catch(err => console.error(err.toString()))
+    this.setState({
+      switcher: !this.state.switcher
+    })
+  }
 
-// connection.invoke() this is how you 
+}
+
+  handleFieldChange = evt => {
+    const stateToChange = {}
+    stateToChange[evt.target.id] = evt.target.value
+    this.setState(stateToChange)
+  }
+
+
 render() {
   // this.state.hub.on("OnConnectedAsync", b => {
   //     console.log("connected!", b)
   // })
-  console.log(this.state.hubConnection)
+
     return (
       <div>
         <button onClick={this.testConnection}>Click Me</button>
         <h2>Clicks: {this.state.clicks}</h2>
+
+        <div id="message-box">
+        <ul>
+        {/* <MessageHandler message={this.state.message}/> */}
+        {this.state.message.map(message => {return <li>{message}</li>})}
+        </ul>
+        </div>
+        <input id="messageField" type="text" placeholder="message" onInput={e => this.handleFieldChange(e)}></input><button onClick={this.sendMessage}>Send</button>
       </div>
     );
   }

@@ -15,7 +15,7 @@ class App extends Component {
 componentDidMount = () => {
   // const hubConnection = new HubConnection("https://localhost:5001/Hubs/ChatHub")
   const hubConnection = new HubConnectionBuilder()
-    .withUrl("http://10.1.10.145:5001/Hubs/ChatHub")
+    .withUrl("http://10.0.0.198:5001/Hubs/ChatHub")
     .configureLogging(LogLevel.Information)
     .build();
   this.setState({ hubConnection }, () => {
@@ -34,7 +34,9 @@ componentDidMount = () => {
     {
       console.log("Working")
       console.log(n)
-      this.state.message.push(n)
+      let addMessage = this.state.message
+      addMessage.push(n)
+      this.setState({message: addMessage})
     })
 
   });
@@ -100,7 +102,7 @@ render() {
         {this.state.message.map(message => {return <li>{message}</li>})}
         </ul>
         </div>
-        <input id="messageField" type="text" placeholder="message" onInput={e => this.handleFieldChange(e)}></input><button onClick={this.sendMessage}>Send</button>
+        <input id="messageField" type="text" placeholder="message" value={this.state.messageField} onInput={e => this.handleFieldChange(e)}></input><button onClick={() => {this.setState({messageField: ""}); this.sendMessage()}}>Send</button>
       </div>
     );
   }

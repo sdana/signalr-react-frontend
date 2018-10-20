@@ -7,7 +7,7 @@ import MessageHandler from "./MessageHandler"
 class App extends Component {
 
   state = {
-    message: ["none yet"],
+    message: [],
     clicks: 0,
     switcher: true
   }
@@ -15,7 +15,7 @@ class App extends Component {
 componentDidMount = () => {
   // const hubConnection = new HubConnection("https://localhost:5001/Hubs/ChatHub")
   const hubConnection = new HubConnectionBuilder()
-    .withUrl("http://10.0.0.198:5001/Hubs/ChatHub")
+    .withUrl("http://10.0.0.134:5001/Hubs/ChatHub")
     .configureLogging(LogLevel.Information)
     .build();
   this.setState({ hubConnection }, () => {
@@ -68,7 +68,8 @@ testConnection = () => {
 
 }
 
-sendMessage = () => {
+sendMessage = (e) => {
+  e.preventDefault()
   if (this.state.hubConnection){
     console.log("Sending message")
     this.state.hubConnection.invoke("newMessage", this.state.messageField).catch(err => console.error(err.toString()))
@@ -92,17 +93,19 @@ render() {
   // })
 
     return (
-      <div>
-        <button onClick={this.testConnection}>Click Me</button>
-        <h2>Clicks: {this.state.clicks}</h2>
+      <div id="main">
+        {/* <button onClick={this.testConnection}>Click Me</button>
+        <h2>Clicks: {this.state.clicks}</h2> */}
+        <h1>Awesome Chat</h1>
 
+        <input type="text" placeholder="username" onChange={this.handleFieldChange}></input><button>Submit</button>
         <div id="message-box">
         <ul>
         {/* <MessageHandler message={this.state.message}/> */}
         {this.state.message.map(message => {return <li>{message}</li>})}
         </ul>
         </div>
-        <input id="messageField" type="text" placeholder="message" value={this.state.messageField} onInput={e => this.handleFieldChange(e)}></input><button onClick={() => {this.setState({messageField: ""}); this.sendMessage()}}>Send</button>
+        <form onSubmit={(e) => {this.setState({messageField: ""}); this.sendMessage(e)}}><input id="messageField" autoComplete="off" type="text" placeholder="message" value={this.state.messageField} onInput={e => this.handleFieldChange(e)}></input><button type="submit">Send</button></form>
       </div>
     );
   }
